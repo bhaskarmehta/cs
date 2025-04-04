@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jupyter-notebooks-USER_PLACEHOLDER
+  namespace: krishidss
+  labels:
+    app: jupyter-USER_PLACEHOLDER
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jupyter-USER_PLACEHOLDER
+  template:
+    metadata:
+      labels:
+        app: jupyter-USER_PLACEHOLDER
+    spec:
+      containers:
+        - name: jupyter-notebook
+          image: jupyter/base-notebook:latest
+          ports:
+            - containerPort: 8888
+          resources:
+            requests:
+              memory: RAM
+              cpu: CPU
+            limits:
+              memory: 32Gi
+              cpu: 8
+          volumeMounts:
+            - name: nfs-storage
+              mountPath: /home/jovyan/work
+              subPathExpr: "USER_PLACEHOLDER" 
+          command:
+            - start-notebook.sh
+          args:
+            - "--ServerApp.base_url=BASE_URL_PLACEHOLDER"
+            - "--ServerApp.default_url=/jupyter/lab"
+            - "--ServerApp.allow_origin='*'"
+            - "--ServerApp.ip=0.0.0.0"
+            - "--ServerApp.port=8888"
+            - "--ServerApp.token=PASSWORD"   
+      volumes:
+        - name: nfs-storage
+          nfs:
+            server: krishi-dss-nfs-server.krishidss.svc.cluster.local
+            path: "/exports"
+
