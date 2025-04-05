@@ -42,6 +42,6 @@ spec:
       volumes:
         - name: nfs-storage
           nfs:
-            server: krishi-dss-nfs-server.krishidss.svc.cluster.local
+            server: nfs-server.default.svc.cluster.local
             path: "/exports"
 
