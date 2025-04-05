@@ -33,10 +33,10 @@ spec:
           # Set ownership
           chown ${USER_UID}:${USER_UID} "/exports/${USER}"
         env:
-        - name: USER_PLACEHOLDER
-          value: "${USER}"
+        - name: USER
+          value: "USER_PLACEHOLDER"
         - name: QUOTA_KB
-          value: "${QUOTA_KB}"
+          value: "QUOTA_KB_PLACEHOLDER"
         - name: USER_UID
           value: "1000"
         volumeMounts:
@@ -49,15 +49,15 @@ spec:
             - containerPort: 8888
           resources:
             requests:
-              memory: RAM
-              cpu: CPU
+              memory: "RAM_PLACEHOLDER"
+              cpu: "CPU_PLACEHOLDER"
             limits:
-              memory: 32Gi
-              cpu: 8
+              memory: "32Gi"
+              cpu: "8"
           volumeMounts:
             - name: nfs-storage
               mountPath: /home/jovyan/work
-              subPathExpr: "USER_PLACEHOLDER" 
+              subPath: "USER_PLACEHOLDER"
           command:
             - start-notebook.sh
           args:
@@ -66,10 +66,87 @@ spec:
             - "--ServerApp.allow_origin='*'"
             - "--ServerApp.ip=0.0.0.0"
             - "--ServerApp.port=8888"
-            - "--ServerApp.token=PASSWORD"   
+            - "--ServerApp.token=PASSWORD_PLACEHOLDER"
       volumes:
         - name: nfs-storage
           nfs:
             server: nfs-server.default.svc.cluster.local
             path: "/exports"
+
+
+
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: jupyter-notebooks-USER_PLACEHOLDER
+#   labels:
+#     app: jupyter-USER_PLACEHOLDER
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: jupyter-USER_PLACEHOLDER
+#   template:
+#     metadata:
+#       labels:
+#         app: jupyter-USER_PLACEHOLDER
+#     spec:
+#       initContainers:
+#       - name: quota-init
+#         image: alpine
+#         command:
+#         - /bin/sh
+#         - -c
+#         - |
+#           # Install quota tools
+#           apk add --no-cache quota
+          
+#           # Create user directory
+#           mkdir -p "/exports/${USER}"
+          
+#           # Set quota (passed from Jenkins)
+#           setquota -u ${USER} 0 ${QUOTA_KB} 0 0 /exports
+          
+#           # Set ownership
+#           chown ${USER_UID}:${USER_UID} "/exports/${USER}"
+#         env:
+#         - name: USER_PLACEHOLDER
+#           value: "${USER}"
+#         - name: QUOTA_KB
+#           value: "${QUOTA_KB}"
+#         - name: USER_UID
+#           value: "1000"
+#         volumeMounts:
+#         - name: nfs-storage
+#           mountPath: /exports
+#       containers:
+#         - name: jupyter-notebook
+#           image: jupyter/base-notebook:latest
+#           ports:
+#             - containerPort: 8888
+#           resources:
+#             requests:
+#               memory: RAM
+#               cpu: CPU
+#             limits:
+#               memory: 32Gi
+#               cpu: 8
+#           volumeMounts:
+#             - name: nfs-storage
+#               mountPath: /home/jovyan/work
+#               subPathExpr: "USER_PLACEHOLDER" 
+#           command:
+#             - start-notebook.sh
+#           args:
+#             - "--ServerApp.base_url=BASE_URL_PLACEHOLDER"
+#             - "--ServerApp.default_url=/jupyter/lab"
+#             - "--ServerApp.allow_origin='*'"
+#             - "--ServerApp.ip=0.0.0.0"
+#             - "--ServerApp.port=8888"
+#             - "--ServerApp.token=PASSWORD"   
+#       volumes:
+#         - name: nfs-storage
+#           nfs:
+#             server: nfs-server.default.svc.cluster.local
+#             path: "/exports"
 
