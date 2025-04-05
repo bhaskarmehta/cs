@@ -14,6 +14,34 @@ spec:
       labels:
         app: jupyter-USER_PLACEHOLDER
     spec:
+      initContainers:
+      - name: quota-init
+        image: alpine
+        command:
+        - /bin/sh
+        - -c
+        - |
+          # Install quota tools
+          apk add --no-cache quota
+          
+          # Create user directory
+          mkdir -p "/exports/${USER}"
+          
+          # Set quota (passed from Jenkins)
+          setquota -u ${USER} 0 ${QUOTA_KB} 0 0 /exports
+          
+          # Set ownership
+          chown ${USER_UID}:${USER_UID} "/exports/${USER}"
+        env:
+        - name: USER_PLACEHOLDER
+          value: "${USER}"
+        - name: QUOTA_KB
+          value: "${QUOTA_KB}"
+        - name: USER_UID
+          value: "1000"
+        volumeMounts:
+        - name: nfs-storage
+          mountPath: /exports
       containers:
         - name: jupyter-notebook
           image: jupyter/base-notebook:latest
