@@ -3,9 +3,10 @@ pipeline {
     parameters {
         string(name: 'BASE_URL', defaultValue: '/user1', description: 'Base URL for Jupyter Notebook')
         string(name: 'USER', defaultValue: 'user1', description: 'User directory')
-        string(name: 'CPU', defaultValue: '2', description: 'CPU in Core')
-        string(name: 'RAM', defaultValue: '4Gi', description: 'Memory in GB')
-        string(name: 'PASSWORD', defaultValue: '', description: 'Enter your password')
+        string(name: 'QUOTA_GB', defaultValue: '5', description: 'Storage quota in GB')
+        string(name: 'CPU', defaultValue: '1', description: 'CPU in Core')
+        string(name: 'RAM', defaultValue: '2Gi', description: 'Memory in GB')
+        string(name: 'PASSWORD', defaultValue: 'test@123', description: 'Enter your password')
     }
     environment {
         // Define environment variables for GKE configuration
@@ -14,7 +15,9 @@ pipeline {
         GKE_CLUSTER_ZONE = 'asia-south1-a'
         GKE_CLUSTER_REGION = 'asia-south1'
         //GKE_CREDENTIAL_ID = 'gke'
+        QUOTA_KB = "${params.QUOTA_GB.toInteger() * 1024 * 1024}"
     }
+
     stages {
 
         stage('Validate Parameters') {
@@ -48,6 +51,7 @@ pipeline {
                     def cpu = params.CPU
                     def ram = params.RAM
                     def password = params.PASSWORD
+                    def storage = env.QUOTA_KB
 
                     // Set the deployment name and service name dynamically using the user parameter
                     // def deploymentName = "jupyter-notebooks-${user}"
@@ -59,6 +63,7 @@ pipeline {
                             -e 's|USER_PLACEHOLDER|${user}|g' \
                             -e 's|CPU|${cpu}|g' \
                             -e 's|RAM|${ram}|g' \
+                            -e 's|QUOTA_KB|${storage}|g' \
                             -e 's|PASSWORD|${password}|g' \
                             deployment.yaml | kubectl apply -f -
                     """
