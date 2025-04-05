@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: jupyter-notebooks-USER_PLACEHOLDER
-  namespace: krishidss
   labels:
     app: jupyter-USER_PLACEHOLDER
 spec:
